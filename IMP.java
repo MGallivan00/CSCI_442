@@ -317,7 +317,6 @@ class IMP implements MouseListener {
                 //get three ints for R, G and B
                 rgbArray = getPixelArray(picture[i][j]);
 
-
                 double gray = .21 * rgbArray[1] + .72* rgbArray[2] + .07*rgbArray[3];
 
                 for(int l = 0; l < 4; l++) {
@@ -331,8 +330,47 @@ class IMP implements MouseListener {
 
     private void blur() {
 
+        int[][] temp = new int[height][width]; //temp with proper dimensions
 
-        resetPicture();
+        //goes through all values
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+
+                int rgbArray[] = new int[4];
+
+                //extracts rgb colors
+                rgbArray = getPixelArray(picture[i][j]);
+
+                int sumr = 0;
+                int sumg = 0;
+                int sumb = 0;
+                //cycles through a 3x3 mask
+                for (int a = -1; a <= 1; a++) {
+                    for (int b = -1; b <= 1; b++) {
+                        if (((i + a) >= 0 && (j + b) >= 0 && (i + a) < height && (b + j) < width)) {
+                            rgbArray = getPixelArray(picture[i + a][j + b]); //grabs the colors for each of the pixels in the mask
+                            sumr += rgbArray[1]; //sums red
+                            sumg += rgbArray[2]; //sums green
+                            sumb += rgbArray[3]; //sums blue
+                        }
+                    }
+                }
+                //averages sum from mask
+                int red = (sumr /9);
+                int green = (sumg /9);
+                int blue = (sumb /9);
+
+                //puts average back into the array
+                rgbArray[1] = red;
+                rgbArray[2] = green;
+                rgbArray[3] = blue;
+
+                //put the new averaged rgb colors into a temp picture
+                temp[i][j] = getPixels(rgbArray);;
+            }
+        }
+        picture = temp; // puts temp back into original photo
+        resetPicture(); //rewrites the image
     }
 
 
