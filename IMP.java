@@ -106,6 +106,8 @@ class IMP implements MouseListener {
         JMenuItem rotateItem = new JMenuItem("Rotate 90");
         JMenuItem grayscaleItem = new JMenuItem("Luminosity Grayscale");
         JMenuItem blurItem = new JMenuItem("Blur");
+        JMenuItem edgedetectionItem = new JMenuItem("Edge Detection");
+        JMenuItem histogramItem = new JMenuItem("Histogram");
 
 
         firstItem.addActionListener(new ActionListener() {
@@ -133,11 +135,27 @@ class IMP implements MouseListener {
             }
         });
 
+        edgedetectionItem.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                edgedetection();
+            }
+        });
+
+        histogramItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                histogram();
+            }
+        });
+
 
         fun.add(firstItem);
         fun.add(rotateItem);
         fun.add(grayscaleItem);
         fun.add(blurItem);
+        fun.add(edgedetectionItem);
+        fun.add(histogramItem);
 
         return fun;
 
@@ -282,7 +300,9 @@ class IMP implements MouseListener {
                 rgbArray = getPixelArray(picture[i][j]);
 
 
-                rgbArray[1] = 0;
+                rgbArray[1] = 228;
+                rgbArray[2] = 172;
+                rgbArray[3] = 52;
                 //take three ints for R, G, B and put them back into a single int
                 picture[i][j] = getPixels(rgbArray);
             }
@@ -319,7 +339,7 @@ class IMP implements MouseListener {
 
                 double gray = .21 * rgbArray[1] + .72* rgbArray[2] + .07*rgbArray[3];
 
-                for(int l = 0; l < 4; l++) {
+                for(int l = 1; l < 4; l++) {
                     rgbArray[l] = (int)gray;
                 }
                 //take three ints for R, G, B and put them back into a single int
@@ -329,6 +349,8 @@ class IMP implements MouseListener {
     }
 
     private void blur() {
+
+        grayscale();
 
         int[][] temp = new int[height][width]; //temp with proper dimensions
 
@@ -371,6 +393,93 @@ class IMP implements MouseListener {
         }
         picture = temp; // puts temp back into original photo
         resetPicture(); //rewrites the image
+    }
+
+    private void edgedetection() {
+
+        grayscale();
+
+        int[][] temp = new int[height][width]; //temp with proper dimensions
+        int[][] mask3 = {
+                {-1, -1, -1},
+                {-1, 8, -1},
+                {-1, -1, -1}
+        };
+
+        int[][] mask5 = {
+                {-1, -1, -1, -1, -1},
+                {-1, 0, 0, 0, -1},
+                {-1, 0, 16, 0, -1},
+                {-1, 0, 0, 0, -1},
+                {-1, -1, -1, -1, -1},
+        };
+
+        //goes through all values
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+
+                int rgbArray[] = new int[4];
+                int[][] neighborhood = new int[3][3]; // get 3-by-3 array of colors in neighborhood
+
+                //cycles through a 3x3 neighborhood
+                for (int a = 0; a < 3; a++) {
+                    for (int b = 0; b < 3; b++) {
+                        if (((i - 1 + a) >= 0 && (j - 1 + b) >= 0 && (i - 1 + a) < height && (j - 1 + b) < width)) {
+                            neighborhood[a][b] = getPixelArray(picture[i - 1 + a][j - 1 + b])[1]; //grabs the color of each pixel in the neighborhood
+                        }
+                    }
+                }
+                //averages sum from mask
+                // apply filter
+                int temp3 = 0, temp5 = 0;
+                for (int a = 0; a < 3; a++) {
+                    for (int b = 0; b < 3; b++) {
+                        temp3 += neighborhood[a][b] * mask3[a][b];
+                        //temp5 += neighborhood[a][b] * mask5[a][b];
+                    }
+                }
+
+                if (temp3 >= 100) {
+                    rgbArray[0] = 255;
+                    for (int l = 1; l < 4; l++) {
+                        rgbArray[l] = 255;
+                    }
+                } else {
+                    for (int l = 0; l < 4; l++) {
+                        rgbArray[l] = 0;
+                    }
+                }
+
+                //put the new averaged rgb colors into a temp picture
+                temp[i][j] = getPixels(rgbArray);
+            }
+        }
+        picture = temp; // puts temp back into original photo
+        resetPicture(); //rewrites the image
+    }
+
+
+
+    private void histogram(){
+        JFrame redFrame = new JFrame("Red");
+        redFrame.setSize(305, 600);
+        redFrame.setLocation(800, 0);
+        JFrame greenFrame = new JFrame("Green");
+        greenFrame.setSize(305, 600);
+        greenFrame.setLocation(1150, 0);
+        JFrame blueFrame = new JFrame("blue");
+        blueFrame.setSize(305, 600);
+        blueFrame.setLocation(1450, 0);
+        MyPanel redPanel = new MyPanel();
+        MyPanel greenPanel = new MyPanel();
+        MyPanel bluePanel = new MyPanel();
+        redFrame.getContentPane().add(redPanel, BorderLayout.CENTER);
+        redFrame.setVisible(true);
+        greenFrame.getContentPane().add(greenPanel, BorderLayout.CENTER);
+        greenFrame.setVisible(true);
+        blueFrame.getContentPane().add(bluePanel, BorderLayout.CENTER);
+        blueFrame.setVisible(true);
+        start.setEnabled(true);
     }
 
 
