@@ -108,6 +108,7 @@ class IMP implements MouseListener {
         JMenuItem blurItem = new JMenuItem("Blur");
         JMenuItem edgedetectionItem = new JMenuItem("Edge Detection");
         JMenuItem histogramItem = new JMenuItem("Histogram");
+        JMenuItem equalizerItem = new JMenuItem("Equalizer");
 
 
         firstItem.addActionListener(new ActionListener() {
@@ -148,6 +149,12 @@ class IMP implements MouseListener {
                 histogram();
             }
         });
+        equalizerItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                equalizer();
+            }
+        });
 
 
         fun.add(firstItem);
@@ -156,6 +163,7 @@ class IMP implements MouseListener {
         fun.add(blurItem);
         fun.add(edgedetectionItem);
         fun.add(histogramItem);
+        fun.add(equalizerItem);
 
         return fun;
 
@@ -363,29 +371,23 @@ class IMP implements MouseListener {
                 //extracts rgb colors
                 rgbArray = getPixelArray(picture[i][j]);
 
-                int sumr = 0;
-                int sumg = 0;
-                int sumb = 0;
+                int sum = 0;
                 //cycles through a 3x3 mask
                 for (int a = -1; a <= 1; a++) {
                     for (int b = -1; b <= 1; b++) {
                         if (((i + a) >= 0 && (j + b) >= 0 && (i + a) < height && (b + j) < width)) {
                             rgbArray = getPixelArray(picture[i + a][j + b]); //grabs the colors for each of the pixels in the mask
-                            sumr += rgbArray[1]; //sums red
-                            sumg += rgbArray[2]; //sums green
-                            sumb += rgbArray[3]; //sums blue
+                            sum += rgbArray[1]; //sums red
                         }
                     }
                 }
                 //averages sum from mask
-                int red = (sumr /9);
-                int green = (sumg /9);
-                int blue = (sumb /9);
+                int gray = (sum /9);
 
                 //puts average back into the array
-                rgbArray[1] = red;
-                rgbArray[2] = green;
-                rgbArray[3] = blue;
+                rgbArray[1] = gray;
+                rgbArray[2] = gray;
+                rgbArray[3] = gray;
 
                 //put the new averaged rgb colors into a temp picture
                 temp[i][j] = getPixels(rgbArray);;
@@ -461,6 +463,44 @@ class IMP implements MouseListener {
 
 
     private void histogram(){
+
+        int totalPixels = width*height;
+
+        //frequency counters for each color & 0-255 value
+        int[] redFreq = new int[256];
+        int[] greenFreq = new int[256];
+        int[] blueFreq = new int[256];
+
+        //Gathering/calculating histogram data (i.e. frequencies)
+        for(int i = 0; i < height; i++) {
+            for(int j = 0; j < width; j++)
+            {
+                int rgbArray[] = new int[4];
+
+                //get three ints for R, G and B
+                rgbArray = getPixelArray(picture[i][j]);
+
+                //current pixel RGB values
+                int r = rgbArray[1];
+                int g = rgbArray[2];
+                int b = rgbArray[3];
+
+                //increasing corresponding frequency values by 1.
+                redFreq[r]++;
+                greenFreq[g]++;
+                blueFreq[b]++;
+
+            }
+        }
+
+        //adjusting frequencies by dividing by 5 (as suggested by hunter in class)
+        for(int i =0; i< 255; i++)
+        {
+            redFreq[i] = redFreq[i]/5;
+            greenFreq[i] = greenFreq[i]/5;
+            blueFreq[i] = blueFreq[i]/5;
+        }
+
         JFrame redFrame = new JFrame("Red");
         redFrame.setSize(305, 600);
         redFrame.setLocation(800, 0);
@@ -470,9 +510,11 @@ class IMP implements MouseListener {
         JFrame blueFrame = new JFrame("blue");
         blueFrame.setSize(305, 600);
         blueFrame.setLocation(1450, 0);
-        MyPanel redPanel = new MyPanel();
-        MyPanel greenPanel = new MyPanel();
-        MyPanel bluePanel = new MyPanel();
+
+        MyPanel redPanel = new MyPanel(redFreq);
+        MyPanel greenPanel = new MyPanel(greenFreq);
+        MyPanel bluePanel = new MyPanel(blueFreq);
+
         redFrame.getContentPane().add(redPanel, BorderLayout.CENTER);
         redFrame.setVisible(true);
         greenFrame.getContentPane().add(greenPanel, BorderLayout.CENTER);
@@ -480,6 +522,86 @@ class IMP implements MouseListener {
         blueFrame.getContentPane().add(bluePanel, BorderLayout.CENTER);
         blueFrame.setVisible(true);
         start.setEnabled(true);
+    }
+
+    private void equalizer() {
+        //frequency counters for each color & 0-255 value
+        int[] redFreq = new int[256];
+        int[] greenFreq = new int[256];
+        int[] blueFreq = new int[256];
+        int[][] temp = new int[height][width];
+
+        int rgbArray[] = new int[4];
+
+        //Gathering/calculating histogram data (i.e. frequencies)
+        for(int i = 0; i < height; i++) {
+            for(int j = 0; j < width; j++)
+            {
+                //get three ints for R, G and B
+                rgbArray = getPixelArray(picture[i][j]);
+
+                //current pixel RGB values
+                int r = rgbArray[1];
+                int g = rgbArray[2];
+                int b = rgbArray[3];
+
+                //increasing corresponding frequency values by 1.
+                redFreq[r]++;
+                greenFreq[g]++;
+                blueFreq[b]++;
+
+            }
+        }
+        int minred = 1000;
+        int mingreen = 1000;
+        int minblue = 1000;
+        int cdfred = 0;
+        int cdfgreen = 0;
+        int cdfblue = 0;
+
+        for(int i = 0; i < redFreq.length; i++){
+            if(redFreq[i] < minred && redFreq[i] != 0){
+                minred = redFreq[i];
+            }
+            if(greenFreq[i] < mingreen && greenFreq[i] != 0){
+                mingreen = greenFreq[i];
+            }
+            if(blueFreq[i] < minblue && blueFreq[i] != 0){
+                minblue = blueFreq[i];
+            }
+        }
+
+        int equalizer = height*width;
+        int red = 0;
+        int green = 0;
+        int blue = 0;
+
+        for(int i = 0; i < redFreq.length; i++) {
+            cdfred += redFreq[i];
+            cdfgreen += greenFreq[i];
+            cdfblue += blueFreq[i];
+
+            red = 255*(cdfred - minred)/(equalizer - minred);
+            green = 255*(cdfgreen - mingreen)/(equalizer - mingreen);
+            blue = 255*(cdfblue - minblue)/(equalizer - minblue);
+        }
+
+        for(int i = 0; i < height; i++) {
+            for(int j = 0; j < width; j++)
+            {
+                //get three ints for R, G and B
+                //puts average back into the array
+                rgbArray[1] = red;
+                rgbArray[2] = green;
+                rgbArray[3] = blue;
+
+                //put the new averaged rgb colors into a temp picture
+                temp[i][j] = getPixels(rgbArray);;
+            }
+        }
+        picture = temp; // puts temp back into original photo
+        resetPicture(); //rewrites the image
+
     }
 
 

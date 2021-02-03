@@ -9,13 +9,17 @@ public class MyPanel extends JPanel
  
 int startX, flag, startY, endX, endY;
 
+    int[] freq;
     BufferedImage grid;
     Graphics2D gc;
+    int rgb[];
+    int max;
 
-	public MyPanel()
+	public MyPanel(int[] freq)
 	{
 	   startX = startY = 0;
-           endX = endY = 100;
+       endX = endY = 100;
+       this.freq = freq;
  	}
 
      public void clear()
@@ -35,12 +39,30 @@ int startX, flag, startY, endX, endY;
 
          }
          g2.drawImage(grid, null, 0, 0);
+         this.drawing(freq);
      }
-    public void drawing()
+    public void drawing(int[] freq)
     {
-        
-        gc.drawLine(startX, startY, endX, endY);
+        for(int i = 0; i < 255; i++) {
+            gc.drawLine(5+i, this.getHeight(), 5+i, this.getHeight()-freq[i]);
+            repaint();
+        }
+    }
+
+    public void drawHistogram() {
+        mapValues();
+        for(int i=20; i<275; i++) {
+            gc.drawLine(i, 595, i, 595-(int)(rgb[i-20]/5));
+        }
         repaint();
+    }
+
+    public void mapValues() {
+        double offset = 590.0/max;
+        System.out.println(max + " offset " + offset);
+        for (int i = 0; i<rgb.length; i++) {
+            rgb[i] = (int)(offset * rgb[i]);
+        }
     }
    
 }
