@@ -723,7 +723,6 @@ class IMP implements MouseListener, ChangeListener {
         panel.add(bHSlider);
         int result = JOptionPane.showConfirmDialog(null, panel, "Tracker", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-        System.out.println(result);
         rH = rHSlider.getValue();
         rL = rLSlider.getValue();
         gH = gHSlider.getValue();
@@ -731,6 +730,7 @@ class IMP implements MouseListener, ChangeListener {
         bH = bHSlider.getValue();
         bL = bLSlider.getValue();
 
+        System.out.println(result);
         System.out.println(rL + ", " + rH + " :Green: " + gL + ", " + gH + " :Blue: " + bL + ", " + bH);
 
         for(int i=0; i<height; i++) {
@@ -748,9 +748,9 @@ class IMP implements MouseListener, ChangeListener {
                         if (rgbArray[3] >= bL && rgbArray[3] <= bH) {
                             match = true;
                             //turn matching colors white
-                            rgbArray[1] = 255;
-                            rgbArray[2] = 255;
-                            rgbArray[3] = 255;
+                           rgbArray[1] = 255;
+                           rgbArray[2] = 255;
+                           rgbArray[3] = 255;
                         }
                     }
                 }
