@@ -694,9 +694,7 @@ class IMP implements MouseListener, ChangeListener {
 
     private void tracker() {
         //this came from a lecture
-        int rL = 0; int rH = 130;
-        int gL = 0; int gH = 200;
-        int bL = 180; int bH = 255;
+        int rL, rH, gL, gH, bL, bH;
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(3,2));
         JSlider rHSlider = new JSlider(0, 255);
@@ -726,11 +724,18 @@ class IMP implements MouseListener, ChangeListener {
         int result = JOptionPane.showConfirmDialog(null, panel, "Tracker", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         System.out.println(result);
+        rH = rHSlider.getValue();
+        rL = rLSlider.getValue();
+        gH = gHSlider.getValue();
+        gL = gLSlider.getValue();
+        bH = bHSlider.getValue();
+        bL = bLSlider.getValue();
 
         System.out.println(rL + ", " + rH + " :Green: " + gL + ", " + gH + " :Blue: " + bL + ", " + bH);
 
         for(int i=0; i<height; i++) {
             for (int j = 0; j < width; j++) {
+                boolean match = false;
                 int rgbArray[] = new int[4];
 
                 //get three ints for R, G and B
@@ -741,16 +746,19 @@ class IMP implements MouseListener, ChangeListener {
                     if (rgbArray[2] >= gL && rgbArray[2] <= gH) {
                         //and in the blue threshold
                         if (rgbArray[3] >= bL && rgbArray[3] <= bH) {
+                            match = true;
                             //turn matching colors white
                             rgbArray[1] = 255;
                             rgbArray[2] = 255;
                             rgbArray[3] = 255;
-                        } else{
-                            rgbArray[1] = 0;
-                            rgbArray[2] = 0;
-                            rgbArray[3] = 0;
                         }
                     }
+                }
+
+                if(!match){
+                    rgbArray[1] = 0;
+                    rgbArray[2] = 0;
+                    rgbArray[3] = 0;
                 }
                 rgbArray[0] = 255;
                 picture[i][j] = getPixels(rgbArray);
