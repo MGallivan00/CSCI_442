@@ -13,7 +13,7 @@ int startX, flag, startY, endX, endY;
     BufferedImage grid;
     Graphics2D gc;
     int rgb[];
-    int max;
+    private int max;
 
 	public MyPanel(int[] freq)
 	{
@@ -27,6 +27,7 @@ int startX, flag, startY, endX, endY;
        grid = null;
        repaint();
     }
+
     public void paintComponent(Graphics g)
     {  
          super.paintComponent(g);

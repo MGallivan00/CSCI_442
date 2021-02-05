@@ -4,6 +4,8 @@
  */
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -11,7 +13,7 @@ import java.awt.image.PixelGrabber;
 import java.awt.image.MemoryImageSource;
 import java.util.prefs.Preferences;
 
-class IMP implements MouseListener {
+class IMP implements MouseListener, ChangeListener {
     JFrame frame;
     JPanel mp;
     JButton start;
@@ -107,8 +109,10 @@ class IMP implements MouseListener {
         JMenuItem grayscaleItem = new JMenuItem("Luminosity Grayscale");
         JMenuItem blurItem = new JMenuItem("Blur");
         JMenuItem edgedetectionItem = new JMenuItem("3x3 Edge Detection");
+        JMenuItem edgedetection5Item = new JMenuItem("5x5 Edge Detection");
         JMenuItem histogramItem = new JMenuItem("Histogram");
         JMenuItem equalizerItem = new JMenuItem("Equalizer");
+        JMenuItem trackerItem = new JMenuItem("Color Tracker");
 
 
         firstItem.addActionListener(new ActionListener() {
@@ -143,6 +147,13 @@ class IMP implements MouseListener {
             }
         });
 
+        edgedetection5Item.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                edgedetection5();
+            }
+        });
+
         histogramItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -155,6 +166,12 @@ class IMP implements MouseListener {
                 equalizer();
             }
         });
+        trackerItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                tracker();
+            }
+        });
 
 
         fun.add(firstItem);
@@ -162,8 +179,10 @@ class IMP implements MouseListener {
         fun.add(grayscaleItem);
         fun.add(blurItem);
         fun.add(edgedetectionItem);
+        fun.add(edgedetection5Item);
         fun.add(histogramItem);
         fun.add(equalizerItem);
+        fun.add(trackerItem);
 
         return fun;
 
@@ -175,7 +194,7 @@ class IMP implements MouseListener {
      */
     private void handleOpen() {
         img = new ImageIcon();
-        JFileChooser chooser = new JFileChooser(new File(System.getProperty("user.home"), "Documents\\Montana State University Academics\\21 _Spring\\CSCI 442"));
+        JFileChooser chooser = new JFileChooser();
         Preferences pref = Preferences.userNodeForPackage(IMP.class);
         String path = pref.get("DEFAULT_PATH", "");
 
@@ -250,6 +269,7 @@ class IMP implements MouseListener {
                 pixels[i * width + j] = picture[i][j];
         Image img2 = toolkit.createImage(new MemoryImageSource(width, height, pixels, 0, width));
 
+        mp.setBackground(new Color(0, 0, 0));
         JLabel label2 = new JLabel(new ImageIcon(img2));
         mp.removeAll();
         mp.add(label2);
@@ -308,9 +328,7 @@ class IMP implements MouseListener {
                 rgbArray = getPixelArray(picture[i][j]);
 
 
-                rgbArray[1] = 228;
-                rgbArray[2] = 172;
-                rgbArray[3] = 52;
+                rgbArray[1] = 0;
                 //take three ints for R, G, B and put them back into a single int
                 picture[i][j] = getPixels(rgbArray);
             }
@@ -427,14 +445,6 @@ class IMP implements MouseListener {
                 {-1, -1, -1}
         };
 
-        int[][] mask5 = {
-                {-1, -1, -1, -1, -1},
-                {-1, 0, 0, 0, -1},
-                {-1, 0, 16, 0, -1},
-                {-1, 0, 0, 0, -1},
-                {-1, -1, -1, -1, -1},
-        };
-
         //goes through all values
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -452,11 +462,10 @@ class IMP implements MouseListener {
                 }
                 //averages sum from mask
                 // apply filter
-                int temp3 = 0, temp5 = 0;
+                int temp3 = 0;
                 for (int a = 0; a < 3; a++) {
                     for (int b = 0; b < 3; b++) {
                         temp3 += neighborhood[a][b] * mask3[a][b];
-                        //temp5 += neighborhood[a][b] * mask5[a][b];
                     }
                 }
 
@@ -479,11 +488,65 @@ class IMP implements MouseListener {
         resetPicture(); //rewrites the image
     }
 
+    private void edgedetection5() {
 
+        grayscale();
+
+        int[][] temp = new int[height][width]; //temp with proper dimensions
+
+        int[][] mask5 = {
+                {-1, -1, -1, -1, -1},
+                {-1,  0,  0,  0, -1},
+                {-1,  0, 16,  0, -1},
+                {-1,  0,  0,  0, -1},
+                {-1, -1, -1, -1, -1},
+        };
+
+        //goes through all values
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+
+                int rgbArray[] = new int[4];
+                int[][] neighborhood = new int[5][5]; // get 3-by-3 array of colors in neighborhood
+
+                //cycles through a 5x5 neighborhood
+                for (int a = 0; a < 5; a++) {
+                    for (int b = 0; b < 5; b++) {
+                        if (((i - 2 + a) >= 0 && (j - 2 + b) >= 0 && (i - 2 + a) < height && (j - 2 + b) < width)) {
+                            //grabs the color of each pixel in the neighborhood
+                            neighborhood[a][b] = getPixelArray(picture[i - 2 + a][j - 2 + b])[1];
+                        }
+                    }
+                }
+                //averages sum from mask
+                // apply filter
+                int temp5 = 0;
+                for (int a = 0; a < 5; a++) {
+                    for (int b = 0; b < 5; b++) {
+                        temp5 += neighborhood[a][b] * mask5[a][b];
+                    }
+                }
+
+                if (temp5 >= 100) {
+                    rgbArray[0] = 255;
+                    for (int l = 1; l < 4; l++) {
+                        rgbArray[l] = 255;
+                    }
+                } else {
+                    for (int l = 0; l < 4; l++) {
+                        rgbArray[l] = 0;
+                    }
+                }
+
+                //put the new averaged rgb colors into a temp picture
+                temp[i][j] = getPixels(rgbArray);
+            }
+        }
+        picture = temp; // puts temp back into original photo
+        resetPicture(); //rewrites the image
+    }
 
     private void histogram(){
-
-        int totalPixels = width*height;
 
         //frequency counters for each color & 0-255 value
         int[] redFreq = new int[256];
@@ -569,10 +632,6 @@ class IMP implements MouseListener {
         int mingreen = 1000;
         int minblue = 1000;
 
-        int cdfred = 0;
-        int cdfgreen = 0;
-        int cdfblue = 0;
-
         for(int i = 0; i < redFreq.length; i++){
             if(redFreq[i] < minred && redFreq[i] != 0){
                 minred = redFreq[i];
@@ -586,9 +645,14 @@ class IMP implements MouseListener {
         }
 
         int equalizer = height*width;
-        int red = 0;
-        int green = 0;
-        int blue = 0;
+        int cdfred = 0;
+        int cdfgreen = 0;
+        int cdfblue = 0;
+
+        int red ;
+        int green;
+        int blue;
+
         int[] redarr = new int[256];
         int[] greenarr = new int[256];
         int[] bluearr = new int[256];
@@ -607,15 +671,11 @@ class IMP implements MouseListener {
             greenarr[i] = Math.round(green);
         }
 
-        System.out.println();
         int rgb[] = new int[4];
         for(int i = 0; i < height; i++) {
             for(int j = 0; j < width; j++)
             {
                 rgb = getPixelArray(picture[i][j]);
-
-                System.out.println(rgb[2] + " " + rgb[3]);
-                System.out.println(greenarr[rgb[2]] + " " + bluearr[rgb[3]]);
 
                 //puts average back into the array
                 rgbArray[0] = 255;
@@ -631,6 +691,74 @@ class IMP implements MouseListener {
         resetPicture(); //rewrites the image
 
     }
+
+    private void tracker() {
+        //this came from a lecture
+        int rL = 0; int rH = 130;
+        int gL = 0; int gH = 200;
+        int bL = 180; int bH = 255;
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(3,2));
+        JSlider rHSlider = new JSlider(0, 255);
+        JSlider gHSlider = new JSlider(0, 255);
+        JSlider bHSlider = new JSlider(0, 255);
+        JSlider rLSlider = new JSlider(0, 255);
+        JSlider gLSlider = new JSlider(0, 255);
+        JSlider bLSlider = new JSlider(0, 255);
+        rHSlider.setName("rh");
+        rLSlider.setName("rl");
+        gHSlider.setName("gh");
+        gLSlider.setName("gl");
+        bHSlider.setName("bh");
+        bLSlider.setName("bl");
+        rHSlider.addChangeListener(this);
+        rLSlider.addChangeListener(this);
+        gHSlider.addChangeListener(this);
+        gLSlider.addChangeListener(this);
+        bHSlider.addChangeListener(this);
+        bLSlider.addChangeListener(this);
+        panel.add(rLSlider);
+        panel.add(rHSlider);
+        panel.add(gLSlider);
+        panel.add(gHSlider);
+        panel.add(bLSlider);
+        panel.add(bHSlider);
+        int result = JOptionPane.showConfirmDialog(null, panel, "Tracker", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        System.out.println(result);
+
+        System.out.println(rL + ", " + rH + " :Green: " + gL + ", " + gH + " :Blue: " + bL + ", " + bH);
+
+        for(int i=0; i<height; i++) {
+            for (int j = 0; j < width; j++) {
+                int rgbArray[] = new int[4];
+
+                //get three ints for R, G and B
+                rgbArray = getPixelArray(picture[i][j]);
+                //if in red threshold
+                if (rgbArray[1] >= rL && rgbArray[1] <= rH) {
+                    //and in green threshold
+                    if (rgbArray[2] >= gL && rgbArray[2] <= gH) {
+                        //and in the blue threshold
+                        if (rgbArray[3] >= bL && rgbArray[3] <= bH) {
+                            //turn matching colors white
+                            rgbArray[1] = 255;
+                            rgbArray[2] = 255;
+                            rgbArray[3] = 255;
+                        } else{
+                            rgbArray[1] = 0;
+                            rgbArray[2] = 0;
+                            rgbArray[3] = 0;
+                        }
+                    }
+                }
+                rgbArray[0] = 255;
+                picture[i][j] = getPixels(rgbArray);
+            }
+        }
+        resetPicture();
+    }
+
 
 
     private void quit() {
@@ -660,6 +788,33 @@ class IMP implements MouseListener {
 
     @Override
     public void mouseReleased(MouseEvent m) {
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent ce) {
+        JSlider source = (JSlider)ce.getSource();
+        if (!source.getValueIsAdjusting())
+        {
+            if(source.getName().equals("rl")) {
+                int rL = source.getValue();
+                System.out.println("rL " + rL);
+            } else if (source.getName().equals("rh")) {
+                int rH = source.getValue();
+                System.out.println("rH " + rH);
+            } else if (source.getName().equals("gl")) {
+                int gL = source.getValue();
+                System.out.println("gL " + gL);
+            } else if (source.getName().equals("gh")) {
+                int gH = source.getValue();
+                System.out.println("gH " + gH);
+            } else if (source.getName().equals("bl")) {
+                int bL = source.getValue();
+                System.out.println("bL " + bL);
+            } else if (source.getName().equals("bh")) {
+                int bH = source.getValue();
+                System.out.println("bH " + bH);
+            }
+        }
     }
 
     public static void main(String[] args) {
