@@ -113,7 +113,8 @@ class IMP implements MouseListener, ChangeListener {
         JMenuItem histogramItem = new JMenuItem("Histogram");
         JMenuItem equalizerItem = new JMenuItem("Equalizer");
         JMenuItem trackerItem = new JMenuItem("Color Tracker");
-
+        JMenuItem quizoneItem = new JMenuItem("Quiz Q One");
+        JMenuItem quiztwoItem = new JMenuItem("Quiz Q Two");
 
         firstItem.addActionListener(new ActionListener() {
             @Override
@@ -166,10 +167,16 @@ class IMP implements MouseListener, ChangeListener {
                 equalizer();
             }
         });
-        trackerItem.addActionListener(new ActionListener() {
+        quizoneItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                tracker();
+                quizone();
+            }
+        });
+        quiztwoItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                quiztwo();
             }
         });
 
@@ -183,6 +190,8 @@ class IMP implements MouseListener, ChangeListener {
         fun.add(histogramItem);
         fun.add(equalizerItem);
         fun.add(trackerItem);
+        fun.add(quizoneItem);
+        fun.add(quiztwoItem);
 
         return fun;
 
@@ -767,7 +776,27 @@ class IMP implements MouseListener, ChangeListener {
         resetPicture();
     }
 
+    private void quizone() {
 
+        for (int i = 0; i < height; i++)
+            for (int j = 0; j < width; j++) {
+                int rgbArray[] = new int[4];
+
+                //get three ints for R, G and B
+                rgbArray = getPixelArray(picture[i][j]);
+
+
+                rgbArray[1] = 0;
+                //take three ints for R, G, B and put them back into a single int
+                picture[i][j] = getPixels(rgbArray);
+            }
+        resetPicture();
+        resetPicture();
+    }
+
+    private void quiztwo(){
+
+    }
 
     private void quit() {
         System.exit(0);
