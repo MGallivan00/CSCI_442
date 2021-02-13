@@ -779,23 +779,57 @@ class IMP implements MouseListener, ChangeListener {
     private void quizone() {
 
         for (int i = 0; i < height; i++)
-            for (int j = 0; j < width; j++) {
+            for (int j = 0; j < width; j = j+4) { //goes by 4
                 int rgbArray[] = new int[4];
 
                 //get three ints for R, G and B
                 rgbArray = getPixelArray(picture[i][j]);
 
-
-                rgbArray[1] = 0;
+                //turns all pixels black
+                for(int l = 1; l < 4; l++) {
+                    rgbArray[l] = 0;
+                }
                 //take three ints for R, G, B and put them back into a single int
                 picture[i][j] = getPixels(rgbArray);
             }
-        resetPicture();
         resetPicture();
     }
 
     private void quiztwo(){
 
+        //This code makes the picture match the given result
+        //The give result changes <200 to white and > 200 to black
+        //This can be seen by looking at the grayscale image first
+        //the pod of the flower is a darker color while the "petal" is a light color
+        //this means the pod has a love grayscale rgb number, and the "petal" has a high one
+        //thus the pod should turn totally black and the "petals" turn white
+        //but your result picture shows the opposite
+        //the result picture shows <200 changed to white and > 200 to black
+        grayscale();
+        for (int i = 0; i < height; i++)
+            for (int j = 0; j < width; j++) {
+                int rgbArray[] = new int[4];
+                int gray;
+
+                //gets color value which is the same for RG and B
+                gray = getPixelArray(picture[i][j])[1];
+
+                if(gray > 200) {
+                    //turns all pixels black
+                    for (int l = 1; l < 4; l++) {
+                        rgbArray[l] = 0;
+                    }
+                } else{
+                    //turns all pixels white
+                    for (int l = 1; l < 4; l++) {
+                        rgbArray[l] = 255;
+                    }
+                }
+                rgbArray[0] = 255;
+                //take three ints for R, G, B and put them back into a single int
+                picture[i][j] = getPixels(rgbArray);
+            }
+        resetPicture();
     }
 
     private void quit() {
