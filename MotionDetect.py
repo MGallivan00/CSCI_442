@@ -45,10 +45,10 @@ while True:
     cv.imshow("Threshold Low", bw)
 
     # TODO: 11) Blur grayscale image
-    # gray = cv.blur(bw, (21, 21), 0)
+    g2 = cv.blur(bw, (21, 21), 0)
 
     # TODO: 12) Threshold grayscale again (using high numbers)
-    _, bw = cv.threshold(g, 100, 255, cv.THRESH_BINARY)
+    _, bw = cv.threshold(g2, 100, 255, cv.THRESH_BINARY)
     cv.imshow("Threshold High", bw)
 
     # TODO: 13) find contours
