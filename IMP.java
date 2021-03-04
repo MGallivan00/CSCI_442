@@ -777,10 +777,10 @@ class IMP implements MouseListener, ChangeListener {
     }
 
     private void quizone() {
+        int rgbArray[] = new int[4];
 
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j = j+4) { //goes by 4
-                int rgbArray[] = new int[4];
 
                 //get three ints for R, G and B
                 rgbArray = getPixelArray(picture[i][j]);
@@ -806,10 +806,11 @@ class IMP implements MouseListener, ChangeListener {
         //but your result picture shows the opposite
         //the result picture shows <200 changed to white and > 200 to black
         grayscale();
+        int rgbArray[] = new int[4];
+        int gray;
+
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++) {
-                int rgbArray[] = new int[4];
-                int gray;
 
                 //gets color value which is the same for RG and B
                 gray = getPixelArray(picture[i][j])[1];
