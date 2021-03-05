@@ -55,6 +55,7 @@ while robot.step(timestep) != -1:
     out = np.reshape(temppic, (height, width, 4))
     cv.imshow("Video", out)
 
+
     #Creates a threshold for the orange colors
     hsv = cv.cvtColor(out, cv.COLOR_BGR2HSV)
     min = np.array([19, 132, 138])
@@ -68,16 +69,42 @@ while robot.step(timestep) != -1:
     n_white_pix = np.sum(res == 255)
     print('Number of white pixels:', n_white_pix)
 
-    #Moves the robot forward and backwards
-    if n_white_pix > 820:
-        print('Move backwards')
-        leftMotor.setVelocity(-2.0)
-        rightMotor.setVelocity(-2.0)
+    #grab contours
+    gray_image = cv.cvtColor(res, cv.COLOR_BGR2GRAY)
+    ret,thresh = cv.threshold(gray_image,127,255,0)
+    M = cv.moments(thresh)
 
-    if n_white_pix < 420:
-        print('Move forwards')
+    # calculate x,y coordinate of center
+    if M["m00"] != 0: #checks for division by zero
+        x = int(M["m10"] / M["m00"])
+        y = int(M["m01"] / M["m00"])
+        print('Center (', x, ', ', y, ')')
+    else:
+        x = 140
+        y = 0
+        print('Center (NA, NA)')
+
+    #Rotates the robot left and right
+    if x > 200:
+        print('Turn right')
         leftMotor.setVelocity(2.0)
+        rightMotor.setVelocity(0.0)
+
+    if x < 60:
+        print('Turn left')
+        leftMotor.setVelocity(0.0)
         rightMotor.setVelocity(2.0)
+
+    #Moves the robot forward and backwards
+    if n_white_pix > 920:
+        print('Move backwards')
+        leftMotor.setVelocity(-4.0)
+        rightMotor.setVelocity(-4.0)
+
+    if n_white_pix < 720:
+        print('Move forwards')
+        leftMotor.setVelocity(4.0)
+        rightMotor.setVelocity(4.0)
 
     k = cv.waitKey(1)
     if k == 27:
