@@ -85,26 +85,24 @@ while robot.step(timestep) != -1:
         print('Center (NA, NA)')
 
     #Rotates the robot left and right
-    if x > 200:
+    if x > 170:
         print('Turn right')
-        leftMotor.setVelocity(2.0)
+        leftMotor.setVelocity(2.5)
         rightMotor.setVelocity(0.0)
-
-    if x < 60:
+    elif x < 90:
         print('Turn left')
         leftMotor.setVelocity(0.0)
-        rightMotor.setVelocity(2.0)
+        rightMotor.setVelocity(2.5)
 
     #Moves the robot forward and backwards
     if n_white_pix > 920:
         print('Move backwards')
-        leftMotor.setVelocity(-4.0)
-        rightMotor.setVelocity(-4.0)
-
-    if n_white_pix < 720:
+        leftMotor.setVelocity(-5.0)
+        rightMotor.setVelocity(-5.0)
+    elif n_white_pix < 720:
         print('Move forwards')
-        leftMotor.setVelocity(4.0)
-        rightMotor.setVelocity(4.0)
+        leftMotor.setVelocity(5.0)
+        rightMotor.setVelocity(5.0)
 
     k = cv.waitKey(1)
     if k == 27:
