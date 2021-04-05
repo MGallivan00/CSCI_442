@@ -1,3 +1,4 @@
+package com.example.facialrecognition;
 
 import android.content.Context;
 import android.graphics.Bitmap;
